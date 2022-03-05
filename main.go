@@ -77,15 +77,20 @@ func prepareUrl(endpoint string, query map[string]string) *url.URL {
 	return u
 }
 
-func doPunch(punch_type int) bool {
-	u := prepareUrl("/stamps", map[string]string{})
+func preparePunchBody(punch_type int, token string) []byte {
 	body, err := json.Marshal(map[string]interface{}{
 		"type":  punch_type,
-		"token": os.Getenv("AK_TOKEN"),
+		"token": token,
 	})
 	if err != nil {
 		panic(err)
 	}
+	return body
+}
+
+func doPunch(punch_type int) bool {
+	u := prepareUrl("/stamps", map[string]string{})
+	body := preparePunchBody(punch_type, os.Getenv("AK_TOKEN"))
 
 	res, err := http.Post(u.String(), "application/json", bytes.NewBuffer(body))
 	if err != nil {

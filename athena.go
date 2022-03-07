@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -16,20 +17,21 @@ func InsertAthena(operation string) {
 
 	mySession := session.Must(session.NewSession())
 	client := athena.New(mySession)
-	database := "kintairecord"
-	output_location := "s3://athenaresult.3qe.us"
-	catalog := "AwsDataCatalog"
-	wg := "primary"
+	database := os.Getenv("ATHENA_DB_NAME")
+	output_location := os.Getenv("ATHENA_OUTPUT_LOCATION")
+	catalog := os.Getenv("ATHENA_CATALOG")
+	wg := os.Getenv("ATHENA_WORKGROUP")
+	table := os.Getenv("ATHENA_TABLE")
 
 	query_string := fmt.Sprintf(`
-	INSERT INTO kintaitable (created_at, operation, year, month)
+	INSERT INTO %s (created_at, operation, year, month)
 	VALUES (
 		CAST(from_iso8601_timestamp('%s') AS TIMESTAMP),
 		'%s',
 		CAST(%d AS SMALLINT),
 		CAST(%d AS TINYINT)
 	);
-	`, iso8601, operation, year, month)
+	`, table, iso8601, operation, year, month)
 
 	query_result, err := client.StartQueryExecution(&athena.StartQueryExecutionInput{
 		QueryString: &query_string,

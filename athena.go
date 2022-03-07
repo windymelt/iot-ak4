@@ -1,4 +1,4 @@
-package iotak4
+package main
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 
 func InsertAthena(operation string) {
 	now := time.Now()
-	iso8601 := now.UTC().Format("YYYY-MM-DDTHH:MM:SSZ")
+	iso8601 := now.UTC().Format(time.RFC3339) // a profile of ISO8601
 	year := now.Year()
 	month := now.Month()
 
@@ -51,7 +51,12 @@ func InsertAthena(operation string) {
 	query_wait_result, err := client.GetQueryExecution(&athena.GetQueryExecutionInput{
 		QueryExecutionId: query_result.QueryExecutionId,
 	})
-	fmt.Println(query_wait_result.QueryExecution.Status.StateChangeReason)
+	if state := query_wait_result.QueryExecution.Status.State; state != nil {
+		fmt.Printf("State: %s\n", *state)
+	}
+	if reason := query_wait_result.QueryExecution.Status.StateChangeReason; reason != nil {
+		fmt.Printf("Reason: %s\n", *reason)
+	}
 	if err != nil {
 		fmt.Println(err)
 		return

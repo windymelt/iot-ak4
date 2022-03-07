@@ -1,4 +1,4 @@
-package iotak4
+package main
 
 import (
 	"bytes"
